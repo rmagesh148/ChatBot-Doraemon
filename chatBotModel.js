@@ -4,6 +4,7 @@ var natural=require('natural');
 	tokenizer = new natural.WordTokenizer();
 var obj;
 var N;
+var cfd={};
 var result={};
 var weight;
 var stopwords=['a', 'an', 'the','so','on', 'of', 'and', 'is', 'was', 'are', 'were', 'in', 'into', "isn't", "wasn't", 'that'];
@@ -45,12 +46,13 @@ function trainModel(alice, bot){
 	weight = 1.0 / N;
 	//result['my'] = [];
 	
+	
 	for (var i=0;i<stemmedMessage.length;i++){
 		
 		//console.log(stemmedMessage[i]);
 		
 		if ( result.hasOwnProperty(stemmedMessage[i])){
-				result[stemmedMessage[i]].push({'response':bot,'weight':weight});
+				result[stemmedMessage[i]].push({'response':bot,'weight':weight,});
 		}
 		else {
 			result[stemmedMessage[i]] = [];
@@ -62,20 +64,48 @@ function trainModel(alice, bot){
 	
 }
 
-var process = function(word){ 
-
+//var process = function(word){ 
+var count=0;
 fs.readFile('input.json', 'utf8', function (err, data) {
   if (err) {
 	return console.error(err);
 	}
 	obj = JSON.parse(data);
 	for(var i=0;i<Object.keys(obj.messages).length;i++){
-		console.log(i);
-		//trainModel(obj.messages[i].Alice,obj.messages[i].Bot);
+		//console.log(i);
+		trainModel(obj.messages[i].Alice,obj.messages[i].Bot);
 	}
-	console.log(word);
+	
+	var words = "name is true";
+	wordlist = tokenizer.tokenize(words);
+	//console.log(word);
+	stopWords = removeStopwords(wordlist);
+	stemWords = stem(stopWords);
+	
+	for(var i=0;i<stemWords.length;i++){
+		//console.log(stemWords[i]);
+		if (result.hasOwnProperty(stemWords[i])){
+			if (cfd.hasOwnProperty(stemWords[i])){
+				console.log("cfd has the value");
+			}
+			else{
+				cfd[stemWords[i]] = [];
+				//cfd[stemWords[i]].push({'value':0});
+				//console.log(cfd);
+				var value=0;
+				console.log(result[stemWords[i]].length);
+				for(var j=0;j<result[stemWords[i]].length;j++){
+					value = value + result[stemWords[i]][j].weight;
+				}
+				console.log(value);
+			}
+		}
+	}
+	
+	
+	
 	
 	
 });
-}
-module.exports=process;
+//}
+//module.exports=process;
