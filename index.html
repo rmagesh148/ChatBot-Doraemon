@@ -31,8 +31,9 @@
 			$('#m').val('');
 			return false;
 		});
-		socket.on('message',function(data,value){
+		socket.on('message',function(data){
 			//$('#messages').text(data);
+			//console.log(data);
 			 $('#messages').append($('<li>').text(data));
 			//$('#messages').text(value);
 		});

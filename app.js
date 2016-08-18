@@ -3,17 +3,23 @@ var express=require('express');
 var app=express();
 var server=require('http').createServer(app);
 var io=require('socket.io')(server);
-var botMessage;
+//var botMessage = null;
+
 
 io.on('connection',function(client){
 	console.log('client connected');
-	//client.emit('messages',{hello:'world'});
+	
 	client.on('message',function(data){	
-		//client.broadcast.emit('message',data);
+		
 		client.emit('message',data);
-		botMessage = botProcess(data);
-		client.emit('message','world');
-		console.log(data);
+		
+		botProcess(data, function(bmessage){
+			//console.log(bmessage);
+			client.emit('message',bmessage);
+		});
+		
+		
+		
 	});
 	
 	});

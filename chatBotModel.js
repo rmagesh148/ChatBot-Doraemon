@@ -4,6 +4,7 @@ var natural=require('natural');
 	tokenizer = new natural.WordTokenizer();
 var obj;
 var N;
+
 var cfd={};
 var result={};
 var weight;
@@ -62,9 +63,32 @@ function trainModel(alice, bot){
 		//console.log(result[stemmedMessage[i]][0].response);
 	}	
 	
+	
+}
+function returnTheResponse(responseObj){
+	resultArray={};
+	var temp=0;
+	for(var i=0;i<responseObj.length;i++){
+		var response = responseObj[i].response;
+		var counter = (resultArray[response] || 0) + responseObj[i].newFdValue;
+		resultArray[response] = counter;
+	}
+	//console.log(resultArray);
+	var ranked = []
+
+  for(var key in resultArray) {
+    if(resultArray.hasOwnProperty(key)) {
+	
+      ranked.push({response:key, cfd:resultArray[key]}); 
+    }
+  }
+
+    return ranked.sort(function(a, b) { return b.count - a.count; });
 }
 
-//var process = function(word){ 
+
+
+var process = function(word, callback){ 
 var count=0;
 fs.readFile('input.json', 'utf8', function (err, data) {
   if (err) {
@@ -76,36 +100,43 @@ fs.readFile('input.json', 'utf8', function (err, data) {
 		trainModel(obj.messages[i].Alice,obj.messages[i].Bot);
 	}
 	
-	var words = "name is true";
-	wordlist = tokenizer.tokenize(words);
+	//var words = " hai name is hello";
+	wordlist = tokenizer.tokenize(word);
 	//console.log(word);
 	stopWords = removeStopwords(wordlist);
 	stemWords = stem(stopWords);
+	var newFd={
+				message:[]
+			};
 	
 	for(var i=0;i<stemWords.length;i++){
 		//console.log(stemWords[i]);
 		if (result.hasOwnProperty(stemWords[i])){
 			if (cfd.hasOwnProperty(stemWords[i])){
-				console.log("cfd has the value");
+				cfd[stemWords[i]].value = cfd[stemWords[i]].value + result[stemWords[i]].weight;
 			}
 			else{
 				cfd[stemWords[i]] = [];
-				//cfd[stemWords[i]].push({'value':0});
-				//console.log(cfd);
 				var value=0;
-				console.log(result[stemWords[i]].length);
+				//console.log(result[stemWords[i]].length);
 				for(var j=0;j<result[stemWords[i]].length;j++){
 					value = value + result[stemWords[i]][j].weight;
 				}
-				console.log(value);
+				//console.log(value);
+				cfd[stemWords[i]].push({'value':value});
+			}
+			
+			for(var j=0;j<result[stemWords[i]].length;j++){
+				var newFdValue = 0;
+				newFdValue = (result[stemWords[i]][j].weight) / (cfd[stemWords[i]][0].value); 
+				newFd.message.push({'response':result[stemWords[i]][j].response,'newFdValue':newFdValue});
 			}
 		}
 	}
-	
-	
-	
-	
-	
+	var sorted = returnTheResponse(newFd.message);
+	var bestResponse = sorted[0].response;
+	//console.log(bestResponse);
+	callback(bestResponse);
 });
-//}
-//module.exports=process;
+}
+module.exports=process;
