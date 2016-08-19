@@ -25,12 +25,22 @@
 	<script src="/socket.io/socket.io.js"></script>
 	<script>
 		var socket=io.connect("http://localhost:8000");
+		
+		socket.on('connect',function(data){
+			var nickname = prompt("what is your nick name?");
+			socket.emit('join',nickname);
+		});
+		
+		
 		$('form').submit(function(){
 			var message = $('#m').val();
+			//console.log(nickname);
+			//socket.emit('join',nickname);
 			socket.emit('message',message);
 			$('#m').val('');
 			return false;
 		});
+		
 		socket.on('message',function(data){
 			//$('#messages').text(data);
 			//console.log(data);

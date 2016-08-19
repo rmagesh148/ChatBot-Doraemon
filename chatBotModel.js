@@ -73,7 +73,6 @@ function returnTheResponse(responseObj){
 		var counter = (resultArray[response] || 0) + responseObj[i].newFdValue;
 		resultArray[response] = counter;
 	}
-	//console.log(resultArray);
 	var ranked = []
 
   for(var key in resultArray) {
@@ -82,8 +81,7 @@ function returnTheResponse(responseObj){
       ranked.push({response:key, cfd:resultArray[key]}); 
     }
   }
-
-    return ranked.sort(function(a, b) { return b.count - a.count; });
+    return ranked.sort(function(a, b) { return b.cfd - a.cfd; });
 }
 
 
@@ -96,11 +94,11 @@ fs.readFile('input.json', 'utf8', function (err, data) {
 	}
 	obj = JSON.parse(data);
 	for(var i=0;i<Object.keys(obj.messages).length;i++){
-		//console.log(i);
 		trainModel(obj.messages[i].Alice,obj.messages[i].Bot);
 	}
 	
-	//var words = " hai name is hello";
+	//var words = "name is hello hai";
+	word = word.toLowerCase();
 	wordlist = tokenizer.tokenize(word);
 	//console.log(word);
 	stopWords = removeStopwords(wordlist);
@@ -110,7 +108,6 @@ fs.readFile('input.json', 'utf8', function (err, data) {
 			};
 	
 	for(var i=0;i<stemWords.length;i++){
-		//console.log(stemWords[i]);
 		if (result.hasOwnProperty(stemWords[i])){
 			if (cfd.hasOwnProperty(stemWords[i])){
 				cfd[stemWords[i]].value = cfd[stemWords[i]].value + result[stemWords[i]].weight;
@@ -118,11 +115,9 @@ fs.readFile('input.json', 'utf8', function (err, data) {
 			else{
 				cfd[stemWords[i]] = [];
 				var value=0;
-				//console.log(result[stemWords[i]].length);
 				for(var j=0;j<result[stemWords[i]].length;j++){
 					value = value + result[stemWords[i]][j].weight;
 				}
-				//console.log(value);
 				cfd[stemWords[i]].push({'value':value});
 			}
 			
