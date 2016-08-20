@@ -16,8 +16,7 @@ function stem(wordList){
 	}
 	return array;
 }
-function removeStopwords(message){
-	//console.log(message); 
+function removeStopwords(message){ 
 	var returnArray=[];
 	for(var i=0;i<message.length;i++){
 		if(stopwords.indexOf(message[i]) == -1){
@@ -31,26 +30,21 @@ function trainModel(alice, bot){
 	
 	// everything to lower case
 	var aliceMessage = alice.toLowerCase();
+	
+	//tokenized using tokenzier
 	aliceMessage = tokenizer.tokenize(aliceMessage);
 	
-	//Remove stop words such as 'a', 'an' , 'the'
+	//removed stopwords=['a', 'an', 'the','so','on', 'of', 'and', 'is', 'was', 'are', 'were', 'in', 'into', "isn't", "wasn't", 'that']; 
 	removedStopwords = removeStopwords(aliceMessage);
-	//console.log(aliceMessage);
 	
-	//stem the words
-	//console.log(natural.PorterStemmer.stem(aliceMessage));
+	//stemmed message using Porter Stemmer Algorithm 
 	stemmedMessage = stem(removedStopwords);
-	//console.log(stemmedMessage);
 	
-	//N = Number of tokens
 	N = stemmedMessage.length;
-	weight = 1.0 / N;
-	//result['my'] = [];
 	
+	weight = 1.0 / N;
 	
 	for (var i=0;i<stemmedMessage.length;i++){
-		
-		//console.log(stemmedMessage[i]);
 		
 		if ( result.hasOwnProperty(stemmedMessage[i])){
 				result[stemmedMessage[i]].push({'response':bot,'weight':weight,});
@@ -59,11 +53,7 @@ function trainModel(alice, bot){
 			result[stemmedMessage[i]] = [];
 			result[stemmedMessage[i]].push({'response':bot,'weight':weight});
 		}
-		
-		//console.log(result[stemmedMessage[i]][0].response);
 	}	
-	
-	
 }
 function returnTheResponse(responseObj){
 	resultArray={};
@@ -84,9 +74,13 @@ function returnTheResponse(responseObj){
     return ranked.sort(function(a, b) { return b.cfd - a.cfd; });
 }
 
-
-
 var process = function(word, callback){ 
+/*
+*	Function takes in the message from the user and trains the model.
+*	@param - word - message from the user
+*	@param function - callback - returns the best response based on the model
+*/
+
 var count=0;
 fs.readFile('input.json', 'utf8', function (err, data) {
   if (err) {
@@ -97,10 +91,8 @@ fs.readFile('input.json', 'utf8', function (err, data) {
 		trainModel(obj.messages[i].Alice,obj.messages[i].Bot);
 	}
 	
-	//var words = "name is hello hai";
 	word = word.toLowerCase();
 	wordlist = tokenizer.tokenize(word);
-	//console.log(word);
 	stopWords = removeStopwords(wordlist);
 	stemWords = stem(stopWords);
 	var newFd={
@@ -127,10 +119,19 @@ fs.readFile('input.json', 'utf8', function (err, data) {
 				newFd.message.push({'response':result[stemWords[i]][j].response,'newFdValue':newFdValue});
 			}
 		}
+		else{
+			count = count + 1;
+		}
 	}
-	var sorted = returnTheResponse(newFd.message);
-	var bestResponse = sorted[0].response;
-	//console.log(bestResponse);
+	//console.log(count);
+	if (count != stemWords.length){
+			sorted = returnTheResponse(newFd.message);
+			bestResponse = sorted[0].response;
+	}
+	else{
+		bestResponse = 'This is boring. Can we talk something else? :P ';
+	}
+	
 	callback(bestResponse);
 });
 }
